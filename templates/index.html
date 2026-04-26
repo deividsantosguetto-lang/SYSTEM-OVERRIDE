@@ -1,0 +1,840 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br" class="dark" translate="no">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
+    <title>OVERRIDE.AI | Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brand: { neon: '#00FF41', dark: '#020204', darker: '#010102' } },
+                    fontFamily: { mono: ['JetBrains Mono', 'monospace'], sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #020204 !important;
+            color: white;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        *:focus {
+            outline: none !important;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.08;
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.05) 0%, transparent 50%), linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px;
+        }
+
+        @keyframes glitch {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: skew(0);
+            }
+
+            3% {
+                opacity: 0.8;
+                transform: skew(2deg);
+            }
+
+            6% {
+                opacity: 0.4;
+                transform: skew(-2deg);
+            }
+        }
+
+        .animate-glitch {
+            animation: glitch 4s infinite;
+            display: inline-block;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .feature-card {
+            background: rgba(8, 8, 10, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .feature-card::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -150%;
+                width: 60%;
+                height: 100%;
+                background: linear-gradient(to right, transparent, rgba(0, 255, 65, 0.1), transparent);
+                transform: skewX(-25deg);
+                pointer-events: none;
+                transition: 0.6s ease-in-out;
+            }
+
+            .feature-card:hover::after {
+                left: 150%;
+            }
+
+            .feature-card:hover {
+                border-color: #00FF41 !important;
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 255, 65, 0.05);
+            }
+        }
+
+        .cyber-panel {
+            background: #010102;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .btn-nuclear {
+            background: #00FF41;
+            color: black;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono';
+            transition: 0.2s;
+            border-radius: 4px;
+        }
+
+        .btn-nuclear:hover:not(:disabled) {
+            background: white;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+            transform: scale(1.02);
+        }
+
+        .input-tech {
+            background: #08080a !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            font-family: 'JetBrains Mono';
+            transition: 0.3s;
+        }
+
+        .input-tech:focus {
+            border-color: #00FF41 !important;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2) !important;
+        }
+
+        .tab-btn {
+            width: 100%;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (min-width: 768px) {
+            .tab-btn {
+                border-bottom: none;
+                border-right: 1px solid rgba(255, 255, 255, 0.05);
+                font-size: 0.8rem;
+                padding: 1.25rem;
+            }
+
+            .tab-btn:last-child {
+                border-right: none;
+            }
+        }
+
+        .tab-active {
+            background-color: #00FF41;
+            color: black;
+            border-bottom-color: transparent;
+        }
+
+        .tab-inactive {
+            background-color: #020204;
+            color: #666;
+        }
+
+        .tab-inactive:hover {
+            color: white;
+            background-color: #050507;
+        }
+
+        .progress-bar-fill {
+            transition: width 0.4s ease;
+        }
+    </style>
+</head>
+
+<body class="antialiased flex flex-col items-center">
+    <div class="matrix-bg"></div>
+
+    <nav
+        class="w-full h-14 md:h-20 border-b border-white/5 bg-[#010102]/95 backdrop-blur flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
+        <div class="flex items-center gap-2 md:gap-3">
+            <i class="fa-solid fa-terminal text-brand-neon text-sm md:text-xl"></i>
+            <span class="font-mono font-bold text-base md:text-xl text-white tracking-tighter">UBER_HIT<span
+                    class="text-brand-neon">.AI</span></span>
+        </div>
+        <div class="flex items-center gap-4 text-[9px] md:text-xs font-mono uppercase text-gray-500">
+            <span class="hidden md:inline">/// Motor: Gemini + OpenCV</span>
+            <a href="/galeria" class="hover:text-brand-neon transition-colors">
+                <i class="fa-solid fa-film mr-1"></i>Galeria
+            </a>
+            <span><i
+                    class="fa-solid fa-circle text-brand-neon text-[6px] md:text-[8px] mr-1 animate-pulse"></i>Online</span>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-6xl mt-6 md:mt-12 px-4 pb-20 flex flex-col items-center text-center z-10">
+
+        <h1 class="text-4xl md:text-8xl font-black mb-2 md:mb-4 uppercase text-white tracking-tight leading-none">
+            SYSTEM <br class="md:hidden"><span class="text-brand-neon animate-glitch">OVERRIDE</span>
+        </h1>
+        <p class="text-sm md:text-2xl font-bold text-gray-300 mb-8 md:mb-12 max-w-3xl">
+            A ferramenta definitiva para <span class="text-brand-neon">dominar o ranking</span> de cortes.
+        </p>
+
+        <div
+            class="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-12 mb-10 md:mb-16 w-full max-w-4xl mx-auto">
+            <div class="w-full md:w-auto text-center py-2 md:py-0 border-b border-white/5 md:border-b-0 pb-4 md:pb-0">
+                <div class="text-3xl md:text-5xl font-black text-brand-neon font-mono">847M+</div>
+                <div class="text-[10px] md:text-xs text-gray-500 uppercase font-bold tracking-wider mt-1">Views Gerados
+                </div>
+            </div>
+            <div
+                class="w-full md:w-auto text-center py-2 md:py-0 md:border-x md:border-white/10 md:px-12 border-b border-white/5 md:border-b-0 pb-4 md:pb-0">
+                <div class="text-3xl md:text-5xl font-black text-white font-mono">12.4K</div>
+                <div class="text-[10px] md:text-xs text-gray-500 uppercase font-bold tracking-wider mt-1">Virais Criados
+                </div>
+            </div>
+            <div class="w-full md:w-auto text-center py-2 md:py-0">
+                <div class="text-3xl md:text-5xl font-black text-brand-neon font-mono">98.3%</div>
+                <div class="text-[10px] md:text-xs text-gray-500 uppercase font-bold tracking-wider mt-1">Retenção Média
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 w-full max-w-5xl mb-12">
+            <div class="feature-card p-5 md:p-8 rounded-lg text-left">
+                <i class="fa-solid fa-brain text-brand-neon text-xl md:text-3xl mb-3 md:mb-4"></i>
+                <h3 class="font-bold text-white uppercase text-xs md:text-sm mb-2">Engenharia de Dopamina</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">IA treinada para encontrar o gancho exato que prende a
+                    atenção nos 3 primeiros segundos.</p>
+            </div>
+            <div class="feature-card p-5 md:p-8 rounded-lg text-left">
+                <i class="fa-solid fa-crosshairs text-brand-neon text-xl md:text-3xl mb-3 md:mb-4"></i>
+                <h3 class="font-bold text-white uppercase text-xs md:text-sm mb-2">Rastreamento Militar</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">Motor OpenCV mantém o rosto do orador sempre
+                    centralizado no formato 9:16.</p>
+            </div>
+            <div class="feature-card p-5 md:p-8 rounded-lg text-left">
+                <i class="fa-solid fa-bolt text-brand-neon text-xl md:text-3xl mb-3 md:mb-4"></i>
+                <h3 class="font-bold text-white uppercase text-xs md:text-sm mb-2">Escala Industrial</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">De 1 link para 10 shorts legendados em minutos. Pare de
+                    editar na mão e automatize.</p>
+            </div>
+        </div>
+
+        <div class="w-full max-w-4xl cyber-panel mx-auto shadow-2xl shadow-brand-neon/5">
+            <div class="flex flex-col md:flex-row bg-[#020204]">
+                <button onclick="switchTab('youtube')" id="tab-youtube" class="tab-btn tab-active">
+                    <i class="fa-brands fa-youtube mr-2"></i>Link Stream (YT)
+                </button>
+                <button onclick="switchTab('upload')" id="tab-upload" class="tab-btn tab-inactive">
+                    <i class="fa-solid fa-file-video mr-2"></i>Local File (MP4)
+                </button>
+                <button onclick="switchTab('reacao')" id="tab-reacao" class="tab-btn tab-inactive">
+                    <i class="fa-solid fa-split mr-2"></i>Modo Reação
+                </button>
+                <button onclick="switchTab('scale')" id="tab-scale" class="tab-btn tab-inactive">
+                    <i class="fa-solid fa-layer-group mr-2"></i>SCALE (BULK)
+                </button>
+            </div>
+
+            <div class="p-5 md:p-10 bg-[#050507]">
+                <form id="mainForm" class="flex flex-col gap-6 md:gap-8">
+
+                    <div id="area-youtube" class="text-left gap-2 flex flex-col">
+                        <label class="text-brand-neon font-mono text-[10px] md:text-xs uppercase font-bold">> Inserir
+                            Alvo (URL)</label>
+                        <input type="text" name="url" placeholder="Cole o link do podcast/vídeo..."
+                            class="input-tech w-full p-4 md:p-5 rounded text-sm md:text-lg focus:outline-none">
+                        <label class="text-gray-500 font-mono text-[10px] uppercase font-bold mt-2">> Criador (Notificação Telegram)</label>
+                        <select name="criador" class="input-tech p-3 md:p-4 rounded text-xs md:text-sm cursor-pointer appearance-none font-bold">
+                            <option value="">— Auto-detectar criador —</option>
+                            <option value="Victor (Marçal)">Marçal (Victor)</option>
+                            <option value="Yara (Ruyter)">Ruyter (Yara)</option>
+                            <option value="Davi (Finch)">Finch (Davi)</option>
+                            <option value="Israel (Primo Rico)">Primo Rico (Israel)</option>
+                            <option value="Cenai (Joel Jota)">Joel Jota (Cenai)</option>
+                        </select>
+                    </div>
+
+                    <div id="area-upload" class="hidden text-left">
+                        <div class="border-2 border-dashed border-white/10 p-8 md:p-12 cursor-pointer hover:border-brand-neon/50 transition-all bg-[#08080a] rounded text-center group"
+                            onclick="document.getElementById('fileInput').click()">
+                            <i
+                                class="fa-solid fa-cloud-arrow-up text-gray-500 group-hover:text-brand-neon text-3xl md:text-5xl mb-4 transition-colors"></i>
+                            <p id="file-label" class="text-xs md:text-sm font-mono text-gray-400 uppercase">Clique para
+                                carregar vídeo bruto</p>
+                            <p class="text-[10px] md:text-xs text-gray-600 mt-2">MP4, MOV, MKV (Max 2GB)</p>
+                            <input type="file" id="fileInput" name="file" accept="video/*" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- REACAO -->
+                    <div id="area-reacao" class="hidden text-left flex flex-col gap-5">
+                        <div class="p-4 bg-brand-neon/5 border border-brand-neon/20 rounded font-mono text-[10px] text-gray-400 leading-relaxed">
+                            <i class="fa-solid fa-circle-info text-brand-neon mr-1"></i>
+                            Envie seu vídeo de <strong class="text-white">reação</strong> + o vídeo fonte (YouTube ou arquivo).
+                            O sistema corta o melhor momento e monta a <strong class="text-white">tela dividida</strong> automaticamente.
+                        </div>
+
+                        <div>
+                            <label class="text-brand-neon font-mono text-[10px] uppercase font-bold block mb-2">> Seu Vídeo de Reação</label>
+                            <div class="border-2 border-dashed border-brand-neon/30 p-6 cursor-pointer hover:border-brand-neon/70 transition-all bg-[#08080a] rounded text-center group"
+                                onclick="document.getElementById('reacaoInput').click()">
+                                <i class="fa-solid fa-camera text-gray-500 group-hover:text-brand-neon text-2xl md:text-4xl mb-3 transition-colors"></i>
+                                <p id="reacao-label" class="text-xs font-mono text-gray-400 uppercase">Clique para carregar sua reação</p>
+                                <p class="text-[10px] text-gray-600 mt-1">MP4, MOV, MKV</p>
+                                <input type="file" id="reacaoInput" name="reacao" accept="video/*" class="hidden">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-gray-500 font-mono text-[10px] uppercase font-bold block mb-2">> Fonte (YouTube URL)</label>
+                            <input type="text" name="url_reacao" placeholder="Cole o link do vídeo que você vai reagir..."
+                                class="input-tech w-full p-4 rounded text-sm focus:outline-none">
+                            <p class="text-[10px] text-gray-600 font-mono mt-1 ml-1">Ou envie abaixo se tiver o arquivo local</p>
+                        </div>
+
+                        <div>
+                            <label class="text-gray-500 font-mono text-[10px] uppercase font-bold block mb-2">> Fonte (Arquivo local, opcional)</label>
+                            <div class="border border-white/10 p-4 cursor-pointer hover:border-white/30 transition-all bg-[#08080a] rounded text-center group"
+                                onclick="document.getElementById('fonteInput').click()">
+                                <p id="fonte-label" class="text-[10px] font-mono text-gray-500 uppercase">Clique para carregar vídeo fonte</p>
+                                <input type="file" id="fonteInput" name="video" accept="video/*" class="hidden">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex flex-col gap-2 flex-1">
+                                <label class="text-[10px] text-gray-500 font-mono uppercase font-bold">Layout</label>
+                                <select name="orientacao" class="input-tech p-3 rounded text-xs cursor-pointer appearance-none font-bold">
+                                    <option value="stack">⬆⬇ Empilhado (TikTok Duet)</option>
+                                    <option value="side">◀▶ Lado a Lado</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-2 flex-1">
+                                <label class="text-[10px] text-gray-500 font-mono uppercase font-bold">Duração (s)</label>
+                                <input type="number" name="duracao_reacao" value="60" min="15" max="120"
+                                    class="input-tech p-3 rounded text-xs focus:outline-none font-bold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SCALE (BULK) -->
+                    <div id="area-scale" class="hidden text-left flex flex-col gap-4">
+                        <div class="p-4 bg-brand-neon/5 border border-brand-neon/20 rounded font-mono text-[10px] text-gray-400 leading-relaxed">
+                            <i class="fa-solid fa-layer-group text-brand-neon mr-1"></i>
+                            Cole até <strong class="text-white">5 URLs do YouTube</strong>. Cada vídeo é processado em sequência e os cortes são enviados automaticamente para os responsáveis no <strong class="text-white">Telegram (Jarves)</strong>.
+                        </div>
+                        <div id="scale-rows" class="flex flex-col gap-3">
+                        </div>
+                        <script>
+                            (function buildScaleRows() {
+                                const criadores = [
+                                    "", "Victor (Marçal)", "Yara (Ruyter)",
+                                    "Davi (Finch)", "Israel (Primo Rico)", "Cenai (Joel Jota)"
+                                ];
+                                const container = document.getElementById('scale-rows');
+                                for (let i = 1; i <= 5; i++) {
+                                    const optsHtml = criadores.map(c =>
+                                        `<option value="${c}">${c || '— Auto-detectar criador —'}</option>`
+                                    ).join('');
+                                    container.insertAdjacentHTML('beforeend', `
+                                        <div class="flex flex-col sm:flex-row gap-2 items-stretch">
+                                            <div class="flex items-center gap-2 sm:w-8 text-brand-neon font-mono text-xs font-bold shrink-0">${i}.</div>
+                                            <input id="scale-url${i}" type="text"
+                                                placeholder="URL do YouTube #${i}${i === 1 ? ' (obrigatório)' : ' (opcional)'}"
+                                                class="input-tech flex-1 p-3 rounded text-xs focus:outline-none">
+                                            <select id="scale-criador${i}"
+                                                class="input-tech p-3 rounded text-xs cursor-pointer appearance-none font-bold sm:w-52 shrink-0">
+                                                ${optsHtml}
+                                            </select>
+                                        </div>
+                                    `);
+                                }
+                            })();
+                        </script>
+                    </div>
+
+                    <div
+                        class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-left border-t border-white/5 pt-6 md:pt-8">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] md:text-xs text-gray-500 font-mono uppercase font-bold">Protocolo
+                                Visual</label>
+                            <select name="estilo"
+                                class="input-tech p-3 md:p-4 rounded text-xs md:text-sm cursor-pointer appearance-none font-bold">
+                                <option value="KARAOKE">Hormozi Premium</option>
+                                <option value="BOX">Box (Fundo Preto)</option>
+                                <option value="PADRAO">Padrão (Amarelo)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="text-[10px] md:text-xs text-gray-500 font-mono uppercase font-bold">Formato</label>
+                            <select name="formato"
+                                class="input-tech p-3 md:p-4 rounded text-xs md:text-sm cursor-pointer appearance-none font-bold">
+                                <option value="9:16">📱 TikTok (9:16)</option>
+                                <option value="16:9">💻 YouTube (16:9)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] md:text-xs text-gray-500 font-mono uppercase font-bold">Qtd
+                                Cortes</label>
+                            <div class="relative">
+                                <input type="number" name="qtd_cortes" value="5" min="1" max="20"
+                                    class="input-tech w-full p-3 md:p-4 rounded text-xs md:text-sm focus:outline-none font-bold">
+                                <span
+                                    class="absolute right-3 top-3.5 md:top-4 text-[10px] text-brand-neon hidden sm:block">MAX
+                                    20</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] md:text-xs text-gray-500 font-mono uppercase font-bold">Duração
+                                (s)</label>
+                            <div class="relative">
+                                <input type="number" name="duracao" value="30" min="15" max="120"
+                                    class="input-tech w-full p-3 md:p-4 rounded text-xs md:text-sm focus:outline-none font-bold">
+                                <span
+                                    class="absolute right-3 top-3.5 md:top-4 text-[10px] text-brand-neon hidden sm:block">MAX
+                                    120s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                        class="btn-nuclear w-full py-4 md:py-6 text-base md:text-xl mt-2 md:mt-4 shadow-lg shadow-brand-neon/20">
+                        INICIAR OPERAÇÃO (OVERRIDE)
+                    </button>
+
+                    <div class="text-center">
+                        <p class="text-[10px] md:text-xs text-gray-500 font-mono uppercase">
+                            <i class="fa-solid fa-shield-check mr-1 text-brand-neon"></i>Status Operacional: Servidores
+                            Prontos
+                        </p>
+                    </div>
+                </form>
+
+                <!-- TERMINAL REAL-TIME -->
+                <div id="loading" class="hidden mt-8 font-mono text-xs">
+                    <div style="border:1px solid rgba(0,255,65,0.35);border-radius:6px;overflow:hidden">
+                        <!-- barra de título estilo macOS -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid rgba(0,255,65,0.2);background:rgba(0,255,65,0.05)">
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;display:inline-block"></span>
+                                <span style="width:11px;height:11px;border-radius:50%;background:#ffbd2e;display:inline-block"></span>
+                                <span style="width:11px;height:11px;border-radius:50%;background:#28c840;display:inline-block"></span>
+                                <span style="margin-left:10px;color:#4b5563;font-size:10px;text-transform:uppercase;letter-spacing:.1em">OVERRIDE.AI // SYSTEM CONSOLE</span>
+                            </div>
+                            <span id="term-status" style="color:#00FF41;font-size:10px" class="animate-pulse">● PROCESSANDO</span>
+                        </div>
+                        <!-- corpo do terminal -->
+                        <div id="term-body" style="padding:14px 16px;height:280px;overflow-y:auto;background:#000;line-height:1.55"></div>
+                    </div>
+                </div>
+
+                <!-- ERRO -->
+                <div id="error-box"
+                    class="hidden mt-6 bg-red-500/10 border border-red-500/30 p-4 rounded font-mono text-xs text-red-400">
+                    <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                    <span id="error-msg">Erro desconhecido.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="results" class="hidden mt-12 md:mt-16 w-full max-w-4xl mx-auto">
+            <div id="grid-videos" class="flex flex-col gap-8 md:gap-12"></div>
+        </div>
+    </main>
+
+    <script>
+        // ----------------------------------------------------------------
+        // Terminal SSE
+        // ----------------------------------------------------------------
+        let _sse      = null;
+        let _activeJob = null;
+
+        const LINE_COLORS = {
+            ERRO:    '#ff4d4d',
+            error:   '#ff4d4d',
+            Error:   '#ff4d4d',
+            FALHA:   '#ff4d4d',
+            WHISPER: '#38bdf8',
+            GEMINI:  '#c084fc',
+            '[IA]':  '#c084fc',
+            FFMPEG:  '#fb923c',
+            VISAO:   '#34d399',
+            OK:      '#00FF41',
+            CONCLU:  '#00FF41',
+            JOB:     '#facc15',
+            YT:      '#f87171',
+            JARVES:  '#a78bfa',
+        };
+
+        function _lineColor(txt) {
+            for (const [k, c] of Object.entries(LINE_COLORS)) {
+                if (txt.includes(k)) return c;
+            }
+            return '#00FF41';
+        }
+
+        function termLog(txt, color) {
+            const body = document.getElementById('term-body');
+            if (!body) return;
+            const line = document.createElement('div');
+            line.style.color  = color || _lineColor(txt);
+            line.style.marginBottom = '2px';
+            line.style.wordBreak = 'break-all';
+            line.textContent = '> ' + txt;
+            body.appendChild(line);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function termClear() {
+            const b = document.getElementById('term-body');
+            if (b) b.innerHTML = '';
+        }
+
+        function termSetStatus(txt, pulse) {
+            const s = document.getElementById('term-status');
+            if (!s) return;
+            s.textContent = txt;
+            pulse ? s.classList.add('animate-pulse') : s.classList.remove('animate-pulse');
+        }
+
+        function connectSSE(jobId) {
+            if (_sse) { _sse.close(); _sse = null; }
+            _activeJob = jobId;
+            try { localStorage.setItem('activeJobId', jobId); } catch(_) {}
+
+            const es = new EventSource('/logs/' + jobId);
+            _sse = es;
+
+            es.onmessage = (e) => {
+                const d = e.data;
+                if (!d || d.startsWith(': ')) return; // heartbeat
+                if (d.startsWith('[DONE]')) {
+                    es.close(); _sse = null;
+                    try { localStorage.removeItem('activeJobId'); } catch(_) {}
+                    try {
+                        const payload = JSON.parse(d.slice(6));
+                        onJobDone(payload);
+                    } catch(err) {
+                        termLog('Erro ao parsear resultado: ' + err, '#ff4d4d');
+                        resetAfterJob();
+                    }
+                } else if (d.startsWith('[ERROR]')) {
+                    es.close(); _sse = null;
+                    termLog(d.slice(7), '#ff4d4d');
+                    onJobError(d.slice(7));
+                } else {
+                    termLog(d);
+                }
+            };
+
+            es.onerror = () => {
+                // Reconecta automaticamente (EventSource faz isso por padrão)
+                termLog('[SSE] Reconectando...', '#facc15');
+            };
+        }
+
+        function onJobDone(data) {
+            termLog('════ OPERAÇÃO CONCLUÍDA ════', '#00FF41');
+            termSetStatus('● CONCLUÍDO', false);
+            document.getElementById('term-status').style.color = '#00FF41';
+
+            const submitBtn = document.getElementById('submitBtn');
+            resetBtn(submitBtn, submitBtn._origText || 'INICIAR OPERAÇÃO (OVERRIDE)');
+            document.getElementById('error-box').classList.add('hidden');
+
+            if (data.status === 'erro') {
+                showError(data.mensagem || 'Erro no processamento.');
+                return;
+            }
+
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+
+                if (data.resultados) {
+                    // modo SCALE
+                    let algumOk = false;
+                    data.resultados.forEach(r => {
+                        if (r.status === 'sucesso' && r.result && r.result.cortes && r.result.cortes.length > 0) {
+                            renderResult(r.result); algumOk = true;
+                        }
+                    });
+                    const erros = data.resultados.filter(r => r.status === 'erro');
+                    if (erros.length > 0) {
+                        const msgs = erros.map(r => `• ${r.url}: ${r.mensagem}`).join('\n');
+                        showError(`${erros.length} URL(s) com erro:\n${msgs}`);
+                    }
+                    if (!algumOk && erros.length === 0) {
+                        showError('Nenhum corte gerado. Verifique URLs e chave Gemini.');
+                    }
+                } else if (data.result && data.result.cortes && data.result.cortes.length > 0) {
+                    renderResult(data.result);
+                } else {
+                    showError('Nenhum corte gerado. Verifique sua chave Gemini no .env');
+                }
+            }, 500);
+        }
+
+        function onJobError(msg) {
+            termSetStatus('● ERRO', false);
+            document.getElementById('term-status').style.color = '#ff4d4d';
+            const submitBtn = document.getElementById('submitBtn');
+            resetBtn(submitBtn, submitBtn._origText || 'INICIAR OPERAÇÃO (OVERRIDE)');
+            showError(msg);
+        }
+
+        function resetAfterJob() {
+            const submitBtn = document.getElementById('submitBtn');
+            resetBtn(submitBtn, submitBtn._origText || 'INICIAR OPERAÇÃO (OVERRIDE)');
+        }
+
+        // Reconecta ao carregar a página se havia um job ativo
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                const savedJob = localStorage.getItem('activeJobId');
+                if (savedJob) {
+                    document.getElementById('loading').classList.remove('hidden');
+                    termClear();
+                    termLog('Reconectando ao job em andamento...', '#facc15');
+                    termSetStatus('● RECONECTANDO', true);
+                    connectSSE(savedJob);
+                    const submitBtn = document.getElementById('submitBtn');
+                    if (submitBtn) {
+                        submitBtn._origText = submitBtn.innerText;
+                        submitBtn.disabled = true;
+                        submitBtn.innerText = 'PROCESSANDO... AGUARDE';
+                        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            } catch(_) {}
+        });
+
+        // ----------------------------------------------------------------
+        // Abas e UI
+        // ----------------------------------------------------------------
+        let mode = 'youtube';
+        const TABS = ['youtube', 'upload', 'reacao', 'scale'];
+
+        function switchTab(s) {
+            mode = s;
+            TABS.forEach(tab => {
+                const area = document.getElementById('area-' + tab);
+                if (area) area.classList.toggle('hidden', tab !== s);
+                const btn = document.getElementById('tab-' + tab);
+                if (tab === s) { btn.classList.add('tab-active'); btn.classList.remove('tab-inactive'); }
+                else { btn.classList.add('tab-inactive'); btn.classList.remove('tab-active'); }
+            });
+            // Ajusta label do botão submit
+            const submitBtn = document.getElementById('submitBtn');
+            const labels = {
+                reacao: 'MONTAR TELA DIVIDIDA',
+                scale:  'INICIAR SCALE — PROCESSAR TODOS',
+            };
+            submitBtn.innerText = labels[s] || 'INICIAR OPERAÇÃO (OVERRIDE)';
+        }
+
+        function bindFileLabel(inputId, labelId) {
+            document.getElementById(inputId).addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                const label = document.getElementById(labelId);
+                if (file) {
+                    let n = file.name;
+                    if (n.length > 28) n = n.substring(0, 25) + "...";
+                    label.innerHTML = `<i class="fa-solid fa-check-circle text-brand-neon mr-2"></i>${n}`;
+                    label.classList.add('text-brand-neon', 'font-bold');
+                }
+            });
+        }
+
+        bindFileLabel('fileInput',   'file-label');
+        bindFileLabel('reacaoInput', 'reacao-label');
+        bindFileLabel('fonteInput',  'fonte-label');
+
+        function resetBtn(btn, originalText) {
+            btn.disabled = false;
+            btn.innerText = originalText;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function showError(msg) {
+            const box = document.getElementById('error-box');
+            document.getElementById('error-msg').innerText = msg;
+            box.classList.remove('hidden');
+        }
+
+        document.getElementById('mainForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('error-box').classList.add('hidden');
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn._origText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'PROCESSANDO... AGUARDE';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const loading = document.getElementById('loading');
+            loading.classList.remove('hidden');
+            termClear();
+            termSetStatus('● PROCESSANDO', true);
+            termLog('Iniciando operação OVERRIDE...', '#facc15');
+
+            // Monta FormData conforme o modo
+            const formData = new FormData();
+            let endpoint;
+
+            if (mode === 'reacao') {
+                endpoint = '/reacao';
+                const reacaoFile = document.getElementById('reacaoInput').files[0];
+                if (!reacaoFile) { resetBtn(submitBtn, submitBtn._origText); showError('Envie seu vídeo de reação.'); loading.classList.add('hidden'); return; }
+                formData.append('reacao', reacaoFile);
+                const urlReacao = e.target.querySelector('[name=url_reacao]').value;
+                if (urlReacao.trim()) formData.append('url', urlReacao.trim());
+                const fonteFile = document.getElementById('fonteInput').files[0];
+                if (fonteFile) formData.append('video', fonteFile);
+                if (!urlReacao.trim() && !fonteFile) { resetBtn(submitBtn, submitBtn._origText); showError('Informe a URL do YouTube ou faça upload da fonte.'); loading.classList.add('hidden'); return; }
+                formData.append('duracao',    e.target.querySelector('[name=duracao_reacao]').value);
+                formData.append('orientacao', e.target.querySelector('[name=orientacao]').value);
+                formData.append('estilo',     e.target.querySelector('[name=estilo]').value);
+            } else if (mode === 'upload') {
+                endpoint = '/upload';
+                const f = document.getElementById('fileInput').files[0];
+                if (!f) { resetBtn(submitBtn, submitBtn._origText); showError('Selecione um arquivo de vídeo.'); loading.classList.add('hidden'); return; }
+                formData.append('file', f);
+                formData.append('qtd_cortes', e.target.querySelector('[name=qtd_cortes]').value);
+                formData.append('duracao',    e.target.querySelector('[name=duracao]').value);
+                formData.append('estilo',     e.target.querySelector('[name=estilo]').value);
+                formData.append('formato',    e.target.querySelector('[name=formato]').value);
+            } else if (mode === 'scale') {
+                endpoint = '/scale';
+                let temUrl = false;
+                for (let i = 1; i <= 5; i++) {
+                    const urlEl     = document.getElementById(`scale-url${i}`);
+                    const criadorEl = document.getElementById(`scale-criador${i}`);
+                    const urlVal    = urlEl ? urlEl.value.trim() : '';
+                    formData.append(`url${i}`,     urlVal);
+                    formData.append(`criador${i}`, criadorEl ? criadorEl.value : '');
+                    if (urlVal) temUrl = true;
+                }
+                if (!temUrl) {
+                    resetBtn(submitBtn, submitBtn._origText);
+                    loading.classList.add('hidden');
+                    showError('Insira ao menos uma URL do YouTube no modo SCALE.');
+                    return;
+                }
+                formData.append('qtd_cortes', e.target.querySelector('[name=qtd_cortes]').value);
+                formData.append('duracao',    e.target.querySelector('[name=duracao]').value);
+                formData.append('estilo',     e.target.querySelector('[name=estilo]').value);
+            } else {
+                endpoint = '/youtube';
+                formData.append('url',        e.target.querySelector('[name=url]').value);
+                formData.append('qtd_cortes', e.target.querySelector('[name=qtd_cortes]').value);
+                formData.append('duracao',    e.target.querySelector('[name=duracao]').value);
+                formData.append('estilo',     e.target.querySelector('[name=estilo]').value);
+                formData.append('formato',    e.target.querySelector('[name=formato]').value);
+                formData.append('criador',    e.target.querySelector('[name=criador]').value);
+            }
+
+            try {
+                const resp = await fetch(endpoint, { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                if (!resp.ok || data.status === 'erro') {
+                    throw new Error(data.mensagem || `Erro ${resp.status} no servidor.`);
+                }
+
+                if (!data.job_id) {
+                    throw new Error('Servidor não retornou job_id.');
+                }
+
+                termLog(`Job ID: ${data.job_id}`, '#4b5563');
+                termLog('Conectando ao stream de logs...', '#facc15');
+                connectSSE(data.job_id);
+
+            } catch (err) {
+                loading.classList.add('hidden');
+                resetBtn(submitBtn, submitBtn._origText);
+                showError('Erro: ' + err.message);
+            }
+        });
+
+        function renderResult(data) {
+            document.getElementById('results').classList.remove('hidden');
+            const grid = document.getElementById('grid-videos');
+
+            const projectHtml = `
+                <div class="mb-12 border-l-4 border-brand-neon pl-4 md:pl-6 w-full">
+                    <h2 class="text-lg md:text-3xl font-black text-white mb-6 uppercase flex items-center gap-3 truncate">
+                        <i class="fa-solid fa-folder-open text-brand-neon"></i> ${data.projeto}
+                    </h2>
+                    <div class="flex flex-col gap-6 md:gap-8 w-full">
+                        ${data.cortes.map(corte => `
+                        <div class="bg-[#050507] border border-white/10 rounded-xl overflow-hidden w-full shadow-2xl flex flex-col md:flex-row">
+                            <div class="w-full md:w-1/3 bg-black h-[300px] md:h-[450px] relative flex items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
+                                <video src="/download/${corte.arquivo}" controls class="w-full h-full object-contain"></video>
+                            </div>
+                            <div class="p-5 md:p-8 flex flex-col justify-between md:w-2/3">
+                                <div>
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                                        <h3 class="font-bold text-white text-sm md:text-xl uppercase leading-tight">${corte.titulo}</h3>
+                                        <span class="bg-brand-neon text-black text-[10px] md:text-xs font-black px-2 py-1 rounded w-max">SCORE ${corte.score}%</span>
+                                    </div>
+                                    <p class="text-xs md:text-sm text-gray-400 font-mono italic border-l-2 border-brand-neon/50 pl-3 md:pl-4 leading-relaxed">"${corte.justificativa}"</p>
+                                </div>
+                                <a href="/download/${corte.arquivo}" download
+                                    class="btn-nuclear py-4 md:py-5 text-sm md:text-base text-center block w-full mt-6 shadow-lg shadow-brand-neon/10">
+                                    <i class="fa-solid fa-download mr-2"></i> Baixar Arquivo MP4
+                                </a>
+                            </div>
+                        </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            grid.insertAdjacentHTML('afterbegin', projectHtml);
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+
+</html>

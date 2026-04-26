@@ -1,0 +1,48 @@
+# PASTAS PESADAS
+cortes/
+debug_frames/
+debug_cortes/
+uploads/
+estoque/
+temp/
+temp_upload/
+ffmpeg_extracted/
+logs/
+
+# PYTHON
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+
+# GIT
+.git/
+
+# REDIS  
+redis*/
+*.zip
+dump.rdb
+
+# DATABASE
+*.db
+*.sqlite3
+
+# MEDIA
+*.mp4
+*.mp3
+*.wav
+*.avi
+
+# DOCS
+*.md
+*.bat
+
+# TESTS
+teste_*.py
+diagnostico_*.py
+verificar_*.py
+
+# ENV
+.env
+.env.local
